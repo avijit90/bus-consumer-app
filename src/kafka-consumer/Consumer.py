@@ -4,13 +4,16 @@ import logging
 from pykafka import KafkaClient
 from pykafka.common import OffsetType
 
+import TopicNotFoundException
+
 
 class Consumer:
 
-    def __init__(self, host, es_connector):
+    def __init__(self, host, es_connector, topic_name):
+        self.client = None
         self.host = host
         self.es_connector = es_connector
-        self.client = None
+        self.topic_name = topic_name.encode('utf-8')
 
     def create_kafka_client(self):
         client = KafkaClient(hosts=self.host)
@@ -30,9 +33,14 @@ class Consumer:
             return 'Skipped record'
 
     def consume_messages(self):
-        print(f'connected to kafka')
-        print(f'Found following topics :{self.client.topics}')
-        topic = self.client.topics['bus_supreme']
+        print(f'connected to Kafka server')
+
+        if self.topic_name not in self.client.topics:
+            print(f"Tried connecting to Topic : {self.topic_name.decode('utf-8')}, but it does not exist !")
+            print(f"Available topics : {[x.decode('utf-8') for x in self.client.topics]}")
+            raise TopicNotFoundException
+
+        topic = self.client.topics[self.topic_name]
         consumer = topic.get_simple_consumer(auto_offset_reset=OffsetType.EARLIEST)
 
         for message in consumer:
