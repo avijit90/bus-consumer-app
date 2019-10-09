@@ -1,26 +1,31 @@
 import logging
-from json import loads
-from kafka import KafkaConsumer
+import json
+
+from pykafka import KafkaClient
+from pykafka.common import OffsetType
 
 
 class Consumer:
 
-    def __init__(self):
-        self.consumer = Consumer.create_kafka_consumer('first_topic')
+    def __init__(self, host):
+        self.host = host
+        self.client = None
 
-    @staticmethod
-    def create_kafka_consumer(topic_name):
-        return KafkaConsumer(
-            topic_name,
-            bootstrap_servers=['localhost:9092'],
-            auto_offset_reset='earliest',
-            enable_auto_commit=True,
-            group_id='consumer-group',
-            value_deserializer=lambda x: loads(x.decode('utf-8')))
+    def create_kafka_client(self):
+        client = KafkaClient(hosts=self.host)
+        self.client = client
 
     def consume_messages(self):
-        for message in self.consumer:
-            logging.info(f'Message value : {message.value}')
+
+        print(f'connected to kafka')
+        print(f'Found following topics :{self.client.topics}')
+        topic = self.client.topics['second_topic']
+        consumer = topic.get_simple_consumer(auto_offset_reset=OffsetType.EARLIEST)
+        for message in consumer:
+            if message is not None:
+                print('----------------------------')
+                print(f'Message offset : {message.offset}')
+                print(f'Message value : {json.load(message.value)}')
 
 
 if __name__ == '__main__':
