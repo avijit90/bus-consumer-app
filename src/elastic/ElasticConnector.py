@@ -1,4 +1,3 @@
-import logging
 import re
 
 import certifi
@@ -34,7 +33,3 @@ class ElasticConnector:
 
     def test_connection(self):
         return self.es_connector.ping()
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
