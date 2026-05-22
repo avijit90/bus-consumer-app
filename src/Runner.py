@@ -1,6 +1,15 @@
+import sys
+from pathlib import Path
+
+# Keep the existing flat imports working even though the repo uses
+# nested source folders that are not valid Python package names.
+SRC_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(SRC_DIR / 'kafka-consumer'))
+sys.path.insert(0, str(SRC_DIR / 'elastic'))
+
 from BusConsumer import BusConsumer
 from ElasticConnector import ElasticConnector
-from src.Config import es_url, topic_name, consumer_config
+from Config import es_url, topic_name, consumer_config
 
 
 def get_es_connection_status():
